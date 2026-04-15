@@ -1,8 +1,6 @@
 package io.github.bulldogboy.iverbstrainer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,20 +8,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.jline.keymap.BindingReader;
+import org.jline.keymap.KeyMap;
+import org.jline.reader.LineReader;
+import org.jline.terminal.Terminal;
+
 public class VerbsTrainerService<T extends Verb> {
-	public VerbsTrainerService(ArrayList<T> vbs) {
+	public VerbsTrainerService(ArrayList<T> vbs, Terminal tr, LineReader lr) {
 		this.vbs = vbs;
+		this.tr = tr;
+		this.lr = lr;
+		bindKeyMaps();
 	}
 
-	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+	KeyMap<String> keyMap = new KeyMap<>();
+
+	private void bindKeyMaps() {
+		keyMap.bind("q", "q");
+		keyMap.bind("w", "w");
+		keyMap.bind("e", "e");
+	};
+
+	Terminal tr;
+	LineReader lr;
 	Random random = new Random();
 	private List<T> vbs;
 
 	public void run() throws IOException {
 		for (int i = 0; vbs.size() > i;) {
-			System.out.println("вход");
-			new VerbChecker(vbs.remove(i), bufferedReader);
-			System.out.println("выход");
+			new VerbChecker(vbs.remove(i));
 		}
 
 		/*
@@ -34,8 +47,7 @@ public class VerbsTrainerService<T extends Verb> {
 	};
 
 	private class VerbChecker {
-//		Verb verb;
-		BufferedReader br;
+
 		private final String KEY_Q = "q";
 		private final String KEY_W = "w";
 		private final String KEY_E = "e";
@@ -94,7 +106,8 @@ public class VerbsTrainerService<T extends Verb> {
 			if (!firstSeal) {
 				System.out.println("Wrong answer");
 			}
-			String key = br.readLine();
+			BindingReader bindingReader = new BindingReader(tr.reader());
+			String key = bindingReader.readBinding(keyMap);
 			if (!currItem.getMeaning().equals(bindsToValue.get(key.toLowerCase()))) {
 				validateAnswer(currItem, false);
 			} else {
@@ -103,8 +116,7 @@ public class VerbsTrainerService<T extends Verb> {
 			}
 		};
 
-		public VerbChecker(Verb verb, BufferedReader br) throws IOException {
-			this.br = br;
+		public VerbChecker(Verb verb) throws IOException {
 			this.inf = verb.infinitive;
 			this.ps = verb.pastSimple;
 			this.pp = verb.pastParticiple;
