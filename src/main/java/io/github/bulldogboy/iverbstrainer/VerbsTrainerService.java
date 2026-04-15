@@ -12,6 +12,10 @@ import org.jline.keymap.BindingReader;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.LineReader;
 import org.jline.terminal.Terminal;
+import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
+import org.jline.utils.InfoCmp;
 
 public class VerbsTrainerService<T extends Verb> {
 	public VerbsTrainerService(ArrayList<T> vbs, Terminal tr, LineReader lr) {
@@ -47,7 +51,7 @@ public class VerbsTrainerService<T extends Verb> {
 	};
 
 	private class VerbChecker {
-
+		AttributedStringBuilder builder = new AttributedStringBuilder();
 		private final String KEY_Q = "q";
 		private final String KEY_W = "w";
 		private final String KEY_E = "e";
@@ -95,16 +99,37 @@ public class VerbsTrainerService<T extends Verb> {
 		};
 
 		private void generateOutMessage(String nameOfTime, String translation) {
-			System.out.println(translation.toUpperCase());
-			System.out.println("Choose the" + nameOfTime + "form");
-			System.out.println("Q) " + bindsToValue.get(KEY_Q));
-			System.out.println("W) " + bindsToValue.get(KEY_W));
-			System.out.println("E) " + bindsToValue.get(KEY_E));
+			tr.puts(InfoCmp.Capability.clear_screen);
+			tr.flush();
+			 AttributedString translationText = builder.style(AttributedStyle.BOLD.foreground(AttributedStyle.BLUE))
+			            .append(translation.toUpperCase())
+			            .style(AttributedStyle.BOLD)
+			            .toAttributedString();
+			 tr.writer().println(translationText.toAnsi());
+			 builder = new AttributedStringBuilder();
+			 
+			  AttributedString chooseFormText = builder.append("Choose the ")
+			            .style(AttributedStyle.DEFAULT.underline().italic().foreground(AttributedStyle.MAGENTA))
+			            .append(nameOfTime)
+			            .style(AttributedStyle.DEFAULT)
+			            .append(" form")
+			            .toAttributedString();
+			    builder = new AttributedStringBuilder();
+			    tr.writer().println(chooseFormText.toAnsi());
+			    
+			tr.writer().println("Q) " + bindsToValue.get(KEY_Q));
+			tr.writer().println("W) " + bindsToValue.get(KEY_W));
+			tr.writer().println("E) " + bindsToValue.get(KEY_E));
 		};
 
 		private void validateAnswer(Status currItem, Boolean firstSeal) throws IOException {
 			if (!firstSeal) {
-				System.out.println("Wrong answer");
+				 AttributedString wrongText = builder.style(AttributedStyle.BOLD.foreground(AttributedStyle.RED))
+				            .append("Wrong answer")
+				            .style(AttributedStyle.BOLD)
+				            .toAttributedString();
+				 tr.writer().println(wrongText.toAnsi());
+				 builder = new AttributedStringBuilder();
 			}
 			BindingReader bindingReader = new BindingReader(tr.reader());
 			String key = bindingReader.readBinding(keyMap);
@@ -112,6 +137,18 @@ public class VerbsTrainerService<T extends Verb> {
 				validateAnswer(currItem, false);
 			} else {
 				currItem.setChecked(true);
+				AttributedString correctlyText = builder.style(AttributedStyle.BOLD.foreground(AttributedStyle.GREEN))
+			            .append("Correctly")
+			            .style(AttributedStyle.BOLD)
+			            .toAttributedString();
+			 tr.writer().println(correctlyText.toAnsi());
+			 builder = new AttributedStringBuilder();
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				return;
 			}
 		};
@@ -136,7 +173,6 @@ public class VerbsTrainerService<T extends Verb> {
 						generateRandomBinds();
 						generateOutMessage(" Infinitive I ", verb.translation);
 						validateAnswer(item, true);
-						System.out.println("Correctly");
 						break;
 					}
 				case PS:
@@ -144,7 +180,6 @@ public class VerbsTrainerService<T extends Verb> {
 						generateRandomBinds();
 						generateOutMessage(" Past Simple II ", verb.translation);
 						validateAnswer(item, true);
-						System.out.println("Correctly");
 						break;
 					}
 				case PP:
@@ -152,7 +187,6 @@ public class VerbsTrainerService<T extends Verb> {
 						generateRandomBinds();
 						generateOutMessage(" Past Participle III ", verb.translation);
 						validateAnswer(item, true);
-						System.out.println("Correctly");
 						break;
 					}
 					break;
