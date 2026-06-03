@@ -1,6 +1,6 @@
 # iverbs-trainer
 Console app for learning English irregular verbs in Russian in a quiz format
-**usage:**
+# usage:
 ```
 git clone https://github.com/bulldogBoy/iverbs-trainer.git
 cd iverbs-trainer
